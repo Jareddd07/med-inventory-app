@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedInventory Pro - Inventory & Borrowing Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- INTRO SCREEN -->
+    <div id="introScreen" 
+     class="fixed inset-0 flex items-center justify-center z-50"
+     style="background-color: #00780e;">
+        <div class="text-center text-white p-8 max-w-2xl mx-auto">
+            <div class="mb-6 flex justify-center">
+                <img src="ncf_logo.webp" alt="Logo" class="w-32 object-contain drop-shadow-lg">
+            </div>
+            <h1 class="text-5xl font-bold mb-4 tracking-tight">MedInventory System</h1>
+            <p class="text-xl mb-8 text-white-100">Inventory & Borrowing Management System</p>
+            <button onclick="enterSystem()" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
+                <span>Enter System</span>
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="mainApp" class="hidden min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-3">
+                        <img src="chs_logo.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <h1 class="text-xl font-bold text-gray-900">MedInventory System</h1>
+                    </div>
+                    <div class="flex items-center gap-4">   
+                        <div class="text-sm text-gray-500" id="currentDate"></div>
+                        <button onclick="showIntro()" class="text-gray-500 hover:text-gray-700">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex space-x-8">
+                    <button onclick="switchTab('available')" id="tab-available" class="tab-active py-4 px-1 text-sm font-medium flex items-center gap-2">
+                        <i data-lucide="box" class="w-4 h-4"></i>
+                        Available Items
+                    </button>
+                    <button onclick="switchTab('borrowed')" id="tab-borrowed" class="tab-inactive py-4 px-1 text-sm font-medium flex items-center gap-2">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                        Borrowed Items
+                        <span id="borrowedCount" class="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 hidden">0</span>
+                    </button>
+                    <button onclick="switchTab('procedures')" id="tab-procedures" class="tab-inactive py-4 px-1 text-sm font-medium flex items-center gap-2">
+                        <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                        Procedures
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Summary Bar -->
+        <div class="bg-blue-50 border-b border-blue-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center gap-2 text-sm text-blue-800 overflow-x-auto whitespace-nowrap" id="summaryBar">
+                    <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
+                    <span id="summaryText">Loading inventory status...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            
+            <!-- AVAILABLE ITEMS SECTION -->
+            <div id="section-available" class="fade-in">
+                <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Available Inventory</h2>
+                        <p class="text-gray-600 mt-1">Browse and borrow medical supplies by category</p>
+                    </div>
+                    
+                    <!-- Search Bar -->
+                    <div class="relative w-full sm:w-96">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Search items..." 
+                            onkeyup="searchItems()"
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        >
+                    </div>
+                </div>
+
+                <div id="availableItemsContainer" class="bg-white rounded-lg shadow overflow-hidden">
+                    <!-- Dynamic Content Here -->
+                </div>
+            </div>
+
+            <!-- BORROWED ITEMS SECTION -->
+            <div id="section-borrowed" class="hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Borrowed Items</h2>
+                    <p class="text-gray-600 mt-1">Track currently borrowed supplies and process returns</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrowers ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="borrowedTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyBorrowedState" class="hidden text-center py-12">
+                        <i data-lucide="check-circle" class="w-12 h-12 text-green-500 mx-auto mb-3"></i>
+                        <p class="text-gray-500">No items currently borrowed</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROCEDURES SECTION -->
+            <div id="section-procedures" class="hidden fade-in">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Medical Procedures</h2>
+                    <p class="text-gray-600 mt-1">Check availability of required items for specific procedures</p>
+                </div>
+
+                <div id="proceduresContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <p class="text-center text-sm text-gray-500">MedInventory Pro © 2024 - Inventory Management System</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- BORROW MODAL -->
+    <div id="borrowModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full slide-up shadow-2xl">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Borrow Item</h3>
+                <button onclick="closeBorrowModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-1">Item:</p>
+                    <p class="font-semibold text-lg text-gray-900" id="modalItemName"></p>
+                    <p class="text-sm text-blue-600" id="modalItemAvailable"></p>
+                </div>
+                <form id="borrowForm" onsubmit="handleBorrowSubmit(event)">
+                    <input type="hidden" id="borrowItemName">
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Borrowers ID *</label>
+                        <input type="text" id="studentId" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="Enter Student ID">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" id="fullName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="Enter Full Name">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <input type="number" id="borrowQuantity" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeBorrowModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium">Cancel</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">Confirm Borrow</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="hidden fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50 flex items-center gap-3">
+        <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+        <span id="toastMessage">Action completed successfully</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
